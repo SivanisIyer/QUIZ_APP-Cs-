@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CS Quiz Master</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500&display=swap">
+  <style>
+    :root {
+      --primary: #8B5CF6;
+      --primary-hover: #7C3AED;
+      --secondary: #E5DEFF;
+      --dark: #1A1F2C;
+      --light: #F8FAFC;
+      --correct: #10B981;
+      --wrong: #EF4444;
+      --neutral: #8E9196;
+      --timer-bg: rgba(139, 92, 246, 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #9b87f5 0%, #7E69AB 100%);
+      color: var(--dark);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      width: 100%;
+    }
+
+    .quiz-container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+      padding: 30px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .quiz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      background: rgba(139, 92, 246, 0.05);
+      padding: 15px;
+      border-radius: 12px;
+    }
+
+    .quiz-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .quiz-title span {
+      color: var(--dark);
+    }
+
+    .topic-badge {
+      font-size: 0.875rem;
+      font-weight: 600;
+      background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+      color: white;
+      padding: 8px 15px;
+      border-radius: 50px;
+      box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
+    }
+
+    .timer-container {
+      background: var(--timer-bg);
+      border-radius: 50px;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(139, 92, 246, 0.2);
+    }
+
+    .timer-progress {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      background: rgba(139, 92, 246, 0.2);
+      transition: width 0.1s linear;
+      z-index: 0;
+      width: 100%;
+    }
+
+    .timer-content {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .timer-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .timer-icon {
+      color: var(--primary);
+      font-size: 1.1rem;
+    }
+
+    .timer {
+      font-weight: 700;
+      color: var(--primary);
+      font-size: 1.1rem;
+    }
+
+    .timer.warning {
+      color: var(--wrong);
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.6; }
+      100% { opacity: 1; }
+    }
+
+    .progress-container {
+      height: 8px;
+      background: #E2E8F0;
+      border-radius: 4px;
+      margin-bottom: 30px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+      width: 0%;
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+
+    .question {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 24px;
+      line-height: 1.6;
+      color: var(--dark);
+      padding: 15px;
+      border-radius: 12px;
+      background: rgba(139, 92, 246, 0.05);
+      border-left: 4px solid var(--primary);
+    }
+
+    .options-container {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+
+    .option {
+      background: white;
+      border: 2px solid #E2E8F0;
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      transform: translateY(0);
+    }
+
+    .option:hover {
+      border-color: var(--primary);
+      background: var(--secondary);
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(139, 92, 246, 0.15);
+    }
+
+    .option.selected {
+      border-color: var(--primary);
+      background: var(--secondary);
+    }
+
+    .option.correct {
+      border-color: var(--correct);
+      background: rgba(16, 185, 129, 0.1);
+    }
+
+    .option.wrong {
+      border-color: var(--wrong);
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    .option-marker {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #E2E8F0;
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.875rem;
+      margin-right: 12px;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+
+    .option.selected .option-marker {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 0 0 2px white, 0 0 0 4px var(--primary);
+    }
+
+    .option.correct .option-marker {
+      background: var(--correct);
+      color: white;
+      box-shadow: 0 0 0 2px white, 0 0 0 4px var(--correct);
+    }
+
+    .option.wrong .option-marker {
+      background: var(--wrong);
+      color: white;
+      box-shadow: 0 0 0 2px white, 0 0 0 4px var(--wrong);
+    }
+
+    .option-text {
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
+    .quiz-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+      background: rgba(139, 92, 246, 0.05);
+      padding: 15px;
+      border-radius: 12px;
+    }
+
+    .quiz-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .quiz-count {
+      font-size: 0.9rem;
+      color: var(--neutral);
+      font-weight: 500;
+    }
+
+    .quiz-score {
+      font-size: 0.9rem;
+      font-weight: 600;
+      background: var(--secondary);
+      color: var(--primary);
+      padding: 8px 15px;
+      border-radius: 50px;
+      box-shadow: 0 4px 10px rgba(139, 92, 246, 0.1);
+    }
+
+    .quiz-score span {
+      font-weight: 700;
+    }
+
+    .quiz-button {
+      background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      transition: all 0.2s ease;
+      font-size: 1rem;
+      box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .quiz-button:after {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+      top: 0;
+      left: -100%;
+      transition: all 0.6s;
+    }
+
+    .quiz-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(139, 92, 246, 0.4);
+    }
+
+    .quiz-button:hover:after {
+      left: 100%;
+    }
+
+    .quiz-button:disabled {
+      background: var(--neutral);
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .result-container {
+      text-align: center;
+      padding: 30px 0;
+      display: none;
+    }
+
+    .result-icon {
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(135deg, var(--secondary), #D6BCFA);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 25px;
+      box-shadow: 0 10px 30px rgba(139, 92, 246, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .result-icon svg {
+      width: 60px;
+      height: 60px;
+      color: var(--primary);
+      filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.1));
+    }
+
+    .result-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 15px;
+      color: var(--dark);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .result-score {
+      font-size: 3.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 25px;
+      text-shadow: 0 2px 5px rgba(139, 92, 246, 0.2);
+    }
+
+    .result-description {
+      font-size: 1.1rem;
+      color: var(--neutral);
+      margin-bottom: 35px;
+      max-width: 80%;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.6;
+    }
+
+    .fade {
+      animation: fadeEffect 0.5s;
+    }
+
+    @keyframes fadeEffect {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .quiz-container {
+        padding: 20px;
+      }
+
+      .quiz-title {
+        font-size: 1.25rem;
+      }
+
+      .question {
+        font-size: 1.125rem;
+      }
+
+      .quiz-footer {
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .quiz-button {
+        width: 100%;
+      }
+
+      .quiz-meta {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+
+    /* Confetti effect for good scores */
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      background-color: #f2d74e;
+      opacity: 0;
+      animation: confetti-fall 3s linear infinite;
+      z-index: 9999;
+    }
+
+    @keyframes confetti-fall {
+      0% {
+        transform: translateY(-100vh) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    .confetti:nth-child(odd) {
+      background-color: var(--primary);
+    }
+
+    .confetti:nth-child(even) {
+      background-color: #10B981;
+    }
+
+    .confetti:nth-child(3n) {
+      background-color: #f87171;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="quiz-container">
+      <div class="quiz-header">
+        <h1 class="quiz-title"><span>CS</span> Quiz Master</h1>
+        <div class="topic-badge" id="topic-badge">OS</div>
+      </div>
+      
+      <div class="timer-container">
+        <div class="timer-progress" id="timer-progress"></div>
+        <div class="timer-content">
+          <div class="timer-left">
+            <span class="timer-icon">⏱️</span>
+            <span class="timer" id="timer">15</span>
+          </div>
+          <div class="quiz-count" id="quiz-count">Question 1 of 6</div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
+
+      <div id="quiz-content">
+        <p class="question" id="question">Loading question...</p>
+        <div class="options-container" id="options-container">
+          <!-- Options will be inserted here -->
+        </div>
+      </div>
+
+      <div class="result-container" id="result-container">
+        <div class="result-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h2 class="result-title">Quiz Completed!</h2>
+        <p class="result-score" id="result-score">0/6</p>
+        <p class="result-description">Great job! You've completed this set of questions. Start a new set to keep learning.</p>
+        <button class="quiz-button" id="restart-button">Start New Set</button>
+      </div>
+
+      <div class="quiz-footer">
+        <div class="quiz-meta">
+          <p class="quiz-score">Score: <span id="score">0</span></p>
+        </div>
+        <button class="quiz-button" id="next-button">Next Question</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Database of quiz questions
+    const quizDatabase = [
+      // OS Questions
+      {
+        question: "Which of the following is NOT a function of an operating system?",
+        options: [
+          "Memory management", 
+          "Process management", 
+          "Device management", 
+          "Database management"
+        ],
+        correctAnswer: 3,
+        topic: "OS"
+      },
+      {
+        question: "What is thrashing in an operating system?",
+        options: [
+          "A high degree of paging activity", 
+          "Removing unused programs from memory", 
+          "Allocating CPU to processes", 
+          "Encrypting data for security"
+        ],
+        correctAnswer: 0,
+        topic: "OS"
+      },
+      {
+        question: "Which scheduling algorithm allocates the CPU first to the process that requests it first?",
+        options: [
+          "Shortest Job First", 
+          "Round Robin", 
+          "First Come First Served", 
+          "Priority Scheduling"
+        ],
+        correctAnswer: 2,
+        topic: "OS"
+      },
+      {
+        question: "What is a semaphore in operating systems?",
+        options: [
+          "A type of file system", 
+          "A synchronization tool", 
+          "A memory allocation technique", 
+          "A CPU scheduling algorithm"
+        ],
+        correctAnswer: 1,
+        topic: "OS"
+      },
+      {
+        question: "Which of the following is an example of a deadlock prevention strategy?",
+        options: [
+          "Resource preemption", 
+          "Banker's algorithm", 
+          "Having a single-user system", 
+          "Resource allocation graph"
+        ],
+        correctAnswer: 0,
+        topic: "OS"
+      },
+      {
+        question: "Which of the following is NOT a type of inter-process communication?",
+        options: [
+          "Pipes", 
+          "Shared memory", 
+          "Message passing", 
+          "Virtual memory"
+        ],
+        correctAnswer: 3,
+        topic: "OS"
+      },
+      {
+        question: "What is the primary purpose of virtual memory in operating systems?",
+        options: [
+          "To increase CPU speed", 
+          "To allow execution of programs larger than physical memory", 
+          "To enhance security features", 
+          "To enable multithreading"
+        ],
+        correctAnswer: 1,
+        topic: "OS"
+      },
+      {
+        question: "What is a context switch in operating systems?",
+        options: [
+          "Changing from user mode to kernel mode", 
+          "Switching from one process to another", 
+          "Changing memory allocation algorithms", 
+          "Moving data between different storage devices"
+        ],
+        correctAnswer: 1,
+        topic: "OS"
+      },
+      {
+        question: "In a time-sharing operating system, which of the following is most important?",
+        options: [
+          "Throughput", 
+          "Response time", 
+          "Memory utilization", 
+          "CPU utilization"
+        ],
+        correctAnswer: 1,
+        topic: "OS"
+      },
+      {
+        question: "Which page replacement algorithm suffers from Belady's anomaly?",
+        options: [
+          "Least Recently Used (LRU)", 
+          "First In First Out (FIFO)", 
+          "Optimal page replacement", 
+          "Most Recently Used (MRU)"
+        ],
+        correctAnswer: 1,
+        topic: "OS"
+      },
+      {
+        question: "What is a zombie process in UNIX systems?",
+        options: [
+          "A process that consumes excessive CPU", 
+          "A terminated process whose entry remains in process table", 
+          "A process that never terminates", 
+          "A process waiting for user input"
+        ],
+        correctAnswer: 1,
+        topic: "OS"
+      },
+      {
+        question: "Which scheduling algorithm is most suitable for time-sharing systems?",
+        options: [
+          "First Come First Served", 
+          "Shortest Job First", 
+          "Round Robin", 
+          "Priority Scheduling"
+        ],
+        correctAnswer: 2,
+        topic: "OS"
+      },
+      {
+        question: "What is the primary function of a device driver?",
+        options: [
+          "To manage file systems", 
+          "To allocate CPU to processes", 
+          "To act as an interface between hardware and OS", 
+          "To enhance system security"
+        ],
+        correctAnswer: 2,
+        topic: "OS"
+      },
+      {
+        question: "What is the purpose of swapping in memory management?",
+        options: [
+          "To exchange data between primary and secondary storage", 
+          "To move files from one folder to another", 
+          "To switch between different running applications", 
+          "To change user access permissions"
+        ],
+        correctAnswer: 0,
+        topic: "OS"
+      },
+      {
+        question: "What is fragmentation in an operating system?",
+        options: [
+          "Breaking programs into smaller pieces", 
+          "Wastage of memory space", 
+          "Splitting CPU time between processes", 
+          "Corruption of file system"
+        ],
+        correctAnswer: 1,
+        topic: "OS"
+      },
+      {
+        question: "Which of the following best describes a preemptive scheduling algorithm?",
+        options: [
+          "Once assigned, CPU cannot be taken away from a process", 
+          "Process voluntarily releases CPU after completion", 
+          "Process with highest priority always runs first", 
+          "CPU can be taken away from a running process by the OS"
+        ],
+        correctAnswer: 3,
+        topic: "OS"
+      },
+      {
+        question: "What is the purpose of the inode in UNIX file systems?",
+        options: [
+          "To store user authentication data", 
+          "To manage memory allocation", 
+          "To store metadata about files", 
+          "To control access to system peripherals"
+        ],
+        correctAnswer: 2,
+        topic: "OS"
+      },
+      // DBMS Questions
+      {
+        question: "Which of the following is NOT a type of database model?",
+        options: [
+          "Relational", 
+          "Network", 
+          "Hierarchical", 
+          "Procedural"
+        ],
+        correctAnswer: 3,
+        topic: "DBMS"
+      },
+      {
+        question: "What does ACID stand for in database transactions?",
+        options: [
+          "Atomicity, Consistency, Isolation, Durability", 
+          "Aggregation, Concurrency, Isolation, Durability", 
+          "Atomicity, Concurrency, Integrity, Durability", 
+          "Accessibility, Consistency, Integration, Design"
+        ],
+        correctAnswer: 0,
+        topic: "DBMS"
+      },
+      {
+        question: "Which normal form deals with removing transitive dependencies?",
+        options: [
+          "First Normal Form (1NF)", 
+          "Second Normal Form (2NF)", 
+          "Third Normal Form (3NF)", 
+          "Fourth Normal Form (4NF)"
+        ],
+        correctAnswer: 2,
+        topic: "DBMS"
+      },
+      {
+        question: "What is the primary purpose of an index in a database?",
+        options: [
+          "To enforce referential integrity", 
+          "To speed up data retrieval", 
+          "To normalize data", 
+          "To reduce database size"
+        ],
+        correctAnswer: 1,
+        topic: "DBMS"
+      },
+      {
+        question: "Which of the following is NOT a property of a transaction in DBMS?",
+        options: [
+          "Atomicity", 
+          "Consistency", 
+          "Redundancy", 
+          "Durability"
+        ],
+        correctAnswer: 2,
+        topic: "DBMS"
+      },
+      {
+        question: "What does SQL stand for?",
+        options: [
+          "Structured Query Language", 
+          "Simple Query Language", 
+          "Sequential Query Language", 
+          "System Query Language"
+        ],
+        correctAnswer: 0,
+        topic: "DBMS"
+      },
+      {
+        question: "Which JOIN type returns rows that have matching values in both tables?",
+        options: [
+          "LEFT JOIN", 
+          "RIGHT JOIN", 
+          "INNER JOIN", 
+          "FULL OUTER JOIN"
+        ],
+        correctAnswer: 2,
+        topic: "DBMS"
+      },
+      {
+        question: "What is a foreign key?",
+        options: [
+          "A key that can access remote databases", 
+          "A field that uniquely identifies each record in a table", 
+          "A field that links to the primary key of another table", 
+          "A key that encrypts database contents"
+        ],
+        correctAnswer: 2,
+        topic: "DBMS"
+      },
+      {
+        question: "Which of the following is used to ensure data integrity in a database?",
+        options: [
+          "Normalization", 
+          "Indexing", 
+          "Constraints", 
+          "Hashing"
+        ],
+        correctAnswer: 2,
+        topic: "DBMS"
+      },
+      {
+        question: "What is a deadlock in DBMS?",
+        options: [
+          "A situation when a database crashes", 
+          "A situation where two transactions are waiting for each other to release resources", 
+          "A query that never completes execution", 
+          "A table that cannot be accessed"
+        ],
+        correctAnswer: 1,
+        topic: "DBMS"
+      },
+      {
+        question: "Which of the following is NOT a type of SQL command?",
+        options: [
+          "DDL (Data Definition Language)", 
+          "DML (Data Manipulation Language)", 
+          "DCL (Data Control Language)", 
+          "DPL (Data Processing Language)"
+        ],
+        correctAnswer: 3,
+        topic: "DBMS"
+      },
+      {
+        question: "What is denormalization in the context of databases?",
+        options: [
+          "Removing redundancy from database tables", 
+          "Adding redundancy to improve query performance", 
+          "Converting an unstructured database to a structured one", 
+          "A technique to reduce database size"
+        ],
+        correctAnswer: 1,
+        topic: "DBMS"
+      },
+      {
+        question: "Which of the following is NOT a database transaction isolation level?",
+        options: [
+          "Read Uncommitted", 
+          "Read Committed", 
+          "Repeatable Read", 
+          "Confirmed Read"
+        ],
+        correctAnswer: 3,
+        topic: "DBMS"
+      },
+      {
+        question: "What is a view in a database?",
+        options: [
+          "A physical storage structure", 
+          "A virtual table based on the result of a SQL statement", 
+          "A graphical interface to design databases", 
+          "A backup of database tables"
+        ],
+        correctAnswer: 1,
+        topic: "DBMS"
+      },
+      {
+        question: "Which one is NOT a type of database key?",
+        options: [
+          "Primary key", 
+          "Foreign key", 
+          "Composite key", 
+          "Integration key"
+        ],
+        correctAnswer: 3,
+        topic: "DBMS"
+      },
+      {
+        question: "What does DDL stand for in the context of SQL?",
+        options: [
+          "Data Definition Language", 
+          "Database Definition Language", 
+          "Data Design Language", 
+          "Database Description Logic"
+        ],
+        correctAnswer: 0,
+        topic: "DBMS"
+      },
+      // Data Structures Questions
+      {
+        question: "Which of the following data structures is NOT linear?",
+        options: [
+          "Array", 
+          "Linked List", 
+          "Stack", 
+          "Tree"
+        ],
+        correctAnswer: 3,
+        topic: "Data Structures"
+      },
+      {
+        question: "What is the time complexity of searching in a balanced binary search tree?",
+        options: [
+          "O(1)", 
+          "O(log n)", 
+          "O(n)", 
+          "O(n²)"
+        ],
+        correctAnswer: 1,
+        topic: "Data Structures"
+      },
+      {
+        question: "Which data structure follows the LIFO principle?",
+        options: [
+          "Queue", 
+          "Stack", 
+          "Linked List", 
+          "Heap"
+        ],
+        correctAnswer: 1,
+        topic: "Data Structures"
+      },
+      {
+        question: "What is the worst-case time complexity of quick sort?",
+        options: [
+          "O(n log n)", 
+          "O(n²)", 
+          "O(n)", 
+          "O(log n)"
+        ],
+        correctAnswer: 1,
+        topic: "Data Structures"
+      },
+      {
+        question: "Which of the following is used to implement a priority queue efficiently?",
+        options: [
+          "Array", 
+          "Linked List", 
+          "Heap", 
+          "Stack"
+        ],
+        correctAnswer: 2,
+        topic: "Data Structures"
+      },
+      {
+        question: "In a hash table, what is a collision?",
+        options: [
+          "When two search operations happen simultaneously", 
+          "When the hash table is full", 
+          "When two keys hash to the same value", 
+          "When a key is not found in the table"
+        ],
+        correctAnswer: 2,
+        topic: "Data Structures"
+      },
+      {
+        question: "Which traversal of binary tree gives nodes in ascending order for a BST?",
+        options: [
+          "Preorder", 
+          "Inorder", 
+          "Postorder", 
+          "Level Order"
+        ],
+        correctAnswer: 1,
+        topic: "Data Structures"
+      },
+      {
+        question: "What is the space complexity of an adjacency matrix representation of a graph with n vertices?",
+        options: [
+          "O(1)", 
+          "O(n)", 
+          "O(n²)", 
+          "O(n log n)"
+        ],
+        correctAnswer: 2,
+        topic: "Data Structures"
+      },
+      {
+        question: "Which of the following is NOT an advantage of linked lists over arrays?",
+        options: [
+          "Dynamic size", 
+          "Ease of insertion/deletion", 
+          "Random access", 
+          "No need for contiguous memory allocation"
+        ],
+        correctAnswer: 2,
+        topic: "Data Structures"
+      },
+      {
+        question: "What does AVL stand for in AVL trees?",
+        options: [
+          "Anderson, Velskii, and Lemoine", 
+          "Adelson-Velsky and Landis", 
+          "Advanced Virtual Linking", 
+          "Array Vector List"
+        ],
+        correctAnswer: 1,
+        topic: "Data Structures"
+      },
+      {
+        question: "Which sorting algorithm is most efficient for nearly sorted arrays?",
+        options: [
+          "Quick Sort", 
+          "Merge Sort", 
+          "Insertion Sort", 
+          "Heap Sort"
+        ],
+        correctAnswer: 2,
+        topic: "Data Structures"
+      },
+      {
+        question: "What is the time complexity of inserting a node at the beginning of a linked list?",
+        options: [
+          "O(1)", 
+          "O(log n)", 
+          "O(n)", 
+          "O(n log n)"
+        ],
+        correctAnswer: 0,
+        topic: "Data Structures"
+      },
+      {
+        question: "Which of the following is NOT a balanced tree data structure?",
+        options: [
+          "AVL Tree", 
+          "Red-Black Tree", 
+          "Binary Search Tree", 
+          "B-Tree"
+        ],
+        correctAnswer: 2,
+        topic: "Data Structures"
+      },
+      {
+        question: "What is the purpose of a heap data structure?",
+        options: [
+          "To store data in sorted order", 
+          "To implement stacks and queues efficiently", 
+          "To provide quick access to the maximum or minimum element", 
+          "To support efficient searches for any value"
+        ],
+        correctAnswer: 2,
+        topic: "Data Structures"
+      },
+      {
+        question: "Which of the following is NOT a graph traversal algorithm?",
+        options: [
+          "Depth First Search", 
+          "Breadth First Search", 
+          "Binary Search", 
+          "Dijkstra's Algorithm"
+        ],
+        correctAnswer: 2,
+        topic: "Data Structures"
+      },
+      {
+        question: "What is the average time complexity of searching in a hash table?",
+        options: [
+          "O(1)", 
+          "O(log n)", 
+          "O(n)", 
+          "O(n log n)"
+        ],
+        correctAnswer: 0,
+        topic: "Data Structures"
+      },
+      {
+        question: "Which tree traversal visits the root node last?",
+        options: [
+          "Preorder", 
+          "Inorder", 
+          "Postorder", 
+          "Level Order"
+        ],
+        correctAnswer: 2,
+        topic: "Data Structures"
+      }
+    ];
+
+    // Variables to keep track of quiz state
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let timer;
+    let timeLeft = 15; // Changed to 15 seconds per question
+    let currentSet = [];
+    let selectedOptionIndex = null;
+    let questionAnswered = false;
+    let totalQuestions = 6; // Questions per set
+    let timerInterval;
+
+    // DOM Elements
+    const questionElement = document.getElementById('question');
+    const optionsContainer = document.getElementById('options-container');
+    const timerElement = document.getElementById('timer');
+    const timerProgress = document.getElementById('timer-progress');
+    const progressBar = document.getElementById('progress-bar');
+    const quizCountElement = document.getElementById('quiz-count');
+    const scoreElement = document.getElementById('score');
+    const nextButton = document.getElementById('next-button');
+    const resultContainer = document.getElementById('result-container');
+    const quizContent = document.getElementById('quiz-content');
+    const resultScoreElement = document.getElementById('result-score');
+    const restartButton = document.getElementById('restart-button');
+    const topicBadge = document.getElementById('topic-badge');
+
+    // Function to start a new quiz set
+    function startQuiz() {
+      // Reset variables
+      currentQuestionIndex = 0;
+      score = 0;
+      selectedOptionIndex = null;
+      questionAnswered = false;
+      scoreElement.textContent = score;
+      
+      // Hide results and show quiz content
+      resultContainer.style.display = 'none';
+      quizContent.style.display = 'block';
+      
+      // Generate a new set of questions
+      generateQuestionSet();
+      
+      // Load first question
+      loadQuestion();
+    }
+
+    // Function to generate a random set of questions
+    function generateQuestionSet() {
+      // Ensure we have equal representation from each topic
+      const osQuestions = quizDatabase.filter(q => q.topic === "OS");
+      const dbmsQuestions = quizDatabase.filter(q => q.topic === "DBMS");
+      const dataStructQuestions = quizDatabase.filter(q => q.topic === "Data Structures");
+      
+      // Randomly select 2 questions from each topic
+      const selectedOS = getRandomElements(osQuestions, 2);
+      const selectedDBMS = getRandomElements(dbmsQuestions, 2);
+      const selectedDataStruct = getRandomElements(dataStructQuestions, 2);
+      
+      // Combine and shuffle the selected questions
+      currentSet = [...selectedOS, ...selectedDBMS, ...selectedDataStruct];
+      shuffleArray(currentSet);
+    }
+
+    // Function to get random elements from an array
+    function getRandomElements(array, count) {
+      const shuffled = [...array];
+      shuffleArray(shuffled);
+      return shuffled.slice(0, count);
+    }
+
+    // Function to shuffle an array (Fisher-Yates algorithm)
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    // Function to load a question
+    function loadQuestion() {
+      // Reset state for new question
+      clearInterval(timerInterval);
+      timeLeft = 15; // Reset to 15 seconds
+      selectedOptionIndex = null;
+      questionAnswered = false;
+      
+      // Update UI for the current question
+      const currentQuestion = currentSet[currentQuestionIndex];
+      questionElement.textContent = currentQuestion.question;
+      topicBadge.textContent = currentQuestion.topic;
+      
+      // Update progress
+      updateProgress();
+      quizCountElement.textContent = `Question ${currentQuestionIndex + 1} of ${totalQuestions}`;
+      
+      // Create options
+      optionsContainer.innerHTML = '';
+      currentQuestion.options.forEach((option, index) => {
+        const optionElement = document.createElement('div');
+        optionElement.className = 'option fade';
+        optionElement.innerHTML = `
+          <div class="option-marker">${String.fromCharCode(65 + index)}</div>
+          <div class="option-text">${option}</div>
+        `;
+        optionElement.addEventListener('click', () => selectOption(index));
+        optionsContainer.appendChild(optionElement);
+      });
+      
+      // Disable next button until an option is selected
+      nextButton.disabled = true;
+      
+      // Start the timer
+      startTimer();
+    }
+
+    // Function to update the progress bar
+    function updateProgress() {
+      const progressPercentage = ((currentQuestionIndex) / totalQuestions) * 100;
+      progressBar.style.width = `${progressPercentage}%`;
+    }
+
+    // Function to start the timer
+    function startTimer() {
+      updateTimerDisplay();
+      
+      // Update the timer every 100ms for smoother progress bar
+      timerInterval = setInterval(() => {
+        timeLeft -= 0.1;
+        
+        if (timeLeft <= 0) {
+          timeLeft = 0;
+          clearInterval(timerInterval);
+          timeUp();
+        }
+        
+        // Update timer UI
+        updateTimerDisplay();
+      }, 100);
+    }
+
+    // Function to update the timer display
+    function updateTimerDisplay() {
+      // Update the numeric display
+      timerElement.textContent = Math.ceil(timeLeft);
+      
+      // Update the progress bar
+      const progressWidth = (timeLeft / 15) * 100;
+      timerProgress.style.width = `${progressWidth}%`;
+      
+      // Visual indication when time is running low
+      if (timeLeft <= 5) {
+        timerElement.classList.add('warning');
+      } else {
+        timerElement.classList.remove('warning');
+      }
+    }
+
+    // Function to handle time up scenario
+    function timeUp() {
+      if (!questionAnswered) {
+        revealCorrectAnswer();
+        nextButton.disabled = false;
+      }
+    }
+
+    // Function to select an option
+    function selectOption(index) {
+      if (questionAnswered) return;
+      
+      questionAnswered = true;
+      selectedOptionIndex = index;
+      clearInterval(timerInterval);
+      
+      // Get all options
+      const options = optionsContainer.querySelectorAll('.option');
+      
+      // Remove selected class from all options
+      options.forEach(option => option.classList.remove('selected'));
+      
+      // Add selected class to the clicked option
+      options[index].classList.add('selected');
+      
+      // Check if answer is correct
+      const currentQuestion = currentSet[currentQuestionIndex];
+      if (index === currentQuestion.correctAnswer) {
+        options[index].classList.add('correct');
+        score++;
+        scoreElement.textContent = score;
+      } else {
+        options[index].classList.add('wrong');
+        options[currentQuestion.correctAnswer].classList.add('correct');
+      }
+      
+      // Enable next button
+      nextButton.disabled = false;
+    }
+
+    // Function to reveal the correct answer
+    function revealCorrectAnswer() {
+      questionAnswered = true;
+      
+      // Get all options
+      const options = optionsContainer.querySelectorAll('.option');
+      
+      // Highlight the correct answer
+      const currentQuestion = currentSet[currentQuestionIndex];
+      options[currentQuestion.correctAnswer].classList.add('correct');
+    }
+
+    // Function to handle next button click
+    function nextQuestion() {
+      currentQuestionIndex++;
+      
+      if (currentQuestionIndex < totalQuestions) {
+        loadQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    // Function to show the results
+    function showResults() {
+      quizContent.style.display = 'none';
+      resultContainer.style.display = 'block';
+      resultScoreElement.textContent = `${score}/${totalQuestions}`;
+      
+      // Update progress bar to show completion
+      progressBar.style.width = '100%';
+      
+      // Remove the timer
+      clearInterval(timerInterval);
+      
+      // Add confetti for good scores (4+ correct answers)
+      if (score >= 4) {
+        createConfetti();
+      }
+    }
+    
+    // Function to create confetti effect
+    function createConfetti() {
+      const confettiCount = 150;
+      const container = document.body;
+      
+      for (let i = 0; i < confettiCount; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        
+        // Random position, size, and animation delay
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.width = Math.random() * 10 + 5 + 'px';
+        confetti.style.height = Math.random() * 10 + 5 + 'px';
+        confetti.style.animationDelay = Math.random() * 3 + 's';
+        confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+        
+        container.appendChild(confetti);
+        
+        // Remove confetti after animation completes
+        setTimeout(() => {
+          confetti.remove();
+        }, 5000);
+      }
+    }
+
+    // Event Listeners
+    nextButton.addEventListener('click', nextQuestion);
+    restartButton.addEventListener('click', startQuiz);
+
+    // Start the quiz when the page loads
+    window.addEventListener('load', startQuiz);
+  </script>
+</body>
+</html>
